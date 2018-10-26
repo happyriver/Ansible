@@ -1,0 +1,53 @@
+# Install pyton3.t on a Raspberry Pi.
+# Run this playbook:
+# ansible-playbook -i host_ip raspbian-python3.6.yml
+#
+#
+---
+- host: all
+  vars:
+    version: 3.6.6
+    threads: 4
+
+  tasks:
+    - name: "Python[{version}} runtime and build dependencies"
+      beccome: True
+      apt: name={{item}}
+      with_items:
+        - build-essential
+        - tk-dev
+        - libncurses5-dev
+        - libncursesw5-dev
+        - libreadline6-dev
+        - libdb5.3-dev
+        - libgdbm-dev
+        - libsqlite3-dev
+        - libssl-dev
+        - libbz2-dev
+        - libexpat1-dev
+        - liblzma-dev
+        - zlib1g-dev
+    - name: "Download Python{{version}}"
+      get_url:
+         url="https://www.python.org/ftp/python/{{version}}/Python-{{version}}.tar.xz"
+         dest="/var/tmp/Python-{{version}}.tar.xz"
+    - name: "Extrace Python-{{version}}"
+      unarchive:
+         src="/var/tmp/Python-{{version}}.tar.xz"
+         dest="/var/tmp/"
+         copy=no
+    - name: "Configure Python{{version}} build"
+      command: ./configure
+      args:
+        chdir: "/var/tmp/Python-{{version}}"
+        creates: "/var/tmp/Python-{{version}}/Makefile"
+    - name: "Build Python{{version}}"
+      command: make -j{{threads}}
+      args:
+        chdir: "/var/tmp/Python-{{version}}"
+        creates: "/var/tmp/Python-{{version}}/python"
+    - name: "Insall Python{{version}}"
+      become: True
+      make:
+        chdir: "/var/tmp/Python-{{version}}
+        target: altinstall
