@@ -1,0 +1,17 @@
+## install tools needed for driving LCD
+---
+- hosts: all
+  tasks:
+    - name: "Install LCD tools"
+      become: True
+      apt:
+         name: ['python-smbus', 'i2c-tools']
+         state: present
+    - name: "Adding the corresponding entries to /etc/modules"
+      become: True
+      lineinfile:
+        path: /etc/modules
+        line: {{item}}
+        with_items:
+          - "i2c-bcm2708"
+          - "i2c-dev"   
